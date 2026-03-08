@@ -102,6 +102,38 @@
       white-space: pre-line;
     }
 
+    .admin-box {
+      margin-top: 14px;
+      background: #fffaf0;
+      border: 1px solid #f2d7a1;
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .admin-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #8a5a00;
+      margin-bottom: 8px;
+    }
+
+    .small-btn {
+      margin-top: 10px;
+      width: 100%;
+      border: none;
+      border-radius: 12px;
+      padding: 12px;
+      background: #c58b39;
+      color: #fff;
+      font-size: 14px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    .small-btn:hover {
+      filter: brightness(0.97);
+    }
+
     .btn {
       margin-top: 16px;
       width: 100%;
@@ -125,6 +157,7 @@
       font-weight: 700;
       color: #2e7d32;
       min-height: 20px;
+      white-space: pre-line;
     }
 
     .board-head {
@@ -144,6 +177,15 @@
     .board-sub {
       color: #667085;
       font-size: 14px;
+    }
+
+    .board-count {
+      margin-top: 6px;
+      font-size: 14px;
+      color: #475467;
+      font-weight: 700;
+      line-height: 1.6;
+      white-space: pre-line;
     }
 
     .notes-grid {
@@ -188,6 +230,39 @@
       flex: 1;
     }
 
+    .media-wrap {
+      margin-top: 12px;
+    }
+
+    .note-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      color: #0b57d0;
+      text-decoration: none;
+      word-break: break-all;
+    }
+
+    .note-link:hover {
+      text-decoration: underline;
+    }
+
+    .note-video-embed {
+      margin-top: 10px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: rgba(255,255,255,0.45);
+    }
+
+    .note-video-embed iframe {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      border: 0;
+      display: block;
+      border-radius: 12px;
+    }
+
     .time {
       margin-top: 14px;
       font-size: 12px;
@@ -208,6 +283,7 @@
       margin-top: 16px;
       font-size: 13px;
       color: #667085;
+      white-space: pre-line;
     }
 
     @media (max-width: 900px) {
@@ -261,15 +337,30 @@
 
         <div class="question-box">
           <div class="question-title">이번 주 질문</div>
-          <div class="question-text" id="questionText"></div>
+          <div class="question-text" id="questionText">질문을 불러오는 중입니다.</div>
+        </div>
+
+        <div class="admin-box">
+          <div class="admin-title">교사용 질문 등록/수정</div>
+          <textarea id="questionEditor" placeholder="수업 전에 이 주차의 질문을 직접 입력하세요.&#10;엔터를 쳐서 여러 줄 질문도 입력할 수 있습니다."></textarea>
+          <button class="small-btn" onclick="saveQuestion()">이 주차 질문 저장</button>
         </div>
 
         <label for="content">생각 쓰기</label>
         <textarea id="content" placeholder="질문을 읽고 자신의 생각을 자유롭게 적어보세요."></textarea>
 
+        <label for="linkUrl">참고 링크(선택)</label>
+        <input id="linkUrl" type="url" placeholder="사진이나 영상은 파일 업로드가 아니라 링크(유튜브, 구글드라이브 등)로 제출하세요." />
+
         <button class="btn" onclick="saveNote()">생각 올리기</button>
         <div class="status" id="statusMsg"></div>
-        <div class="footer-tip">같은 주차를 선택하면 아래 게시판에 해당 주차의 생각들이 보입니다.</div>
+        <div class="footer-tip">같은 주차를 선택하면 아래 게시판에 해당 주차의 생각들이 보입니다.
+질문은 미리 고정해두지 않고, 선생님이 수업 전에 직접 등록할 수 있습니다.
+사진이나 영상 자료는 파일 업로드가 아니라 링크(유튜브, 구글드라이브, 블로그 등)를 통해 제출합니다.
+링크를 클릭하면 해당 사진이나 영상을 확인할 수 있으며 유튜브 링크는 담벼락에서 바로 재생됩니다.
+생각 올리기 후에는 수정이 불가능하므로 내용을 확인한 뒤 제출해 주세요.
+사진·영상 링크는 친구들도 볼 수 있도록 링크 공유 상태를 확인해 주세요.
+저장된 글은 삭제되지 않고 주차별로 계속 누적되어 남습니다.</div>
       </div>
 
       <div class="panel">
@@ -277,6 +368,7 @@
           <div>
             <h2>생각 담벼락</h2>
             <div class="board-sub" id="boardSub">현재 선택한 주차의 글을 보여줍니다.</div>
+            <div class="board-count" id="boardCount">기록 인원을 불러오는 중입니다.</div>
           </div>
         </div>
 
@@ -293,21 +385,6 @@
       "sb_publishable_q8cGT0VAmshe-my_VWA7kA_H5XTA09_"
     );
 
-    const QUESTIONS = {
-      2: "이번 수업 내용을 통해 디지털 교육이 왜 필요한지, 자신의 생각을 적어보세요.",
-      3: "오늘 다룬 내용 중 가장 인상 깊었던 점은 무엇이었나요? 그 이유도 함께 적어보세요.",
-      4: "디지털 도구가 유아교육에서 어떤 가능성을 가질 수 있다고 생각하나요?",
-      5: "오늘 수업의 개념을 실제 교육 현장에 적용한다면 어떤 방식으로 활용할 수 있을까요?",
-      6: "디지털 교육의 장점과 함께 주의해야 할 점은 무엇이라고 생각하나요?",
-      7: "오늘 활동을 통해 새롭게 알게 된 점이나 생각이 바뀐 부분이 있다면 적어보세요.",
-      8: "유아의 관점에서 오늘의 디지털 활동은 어떤 의미가 있을지 생각해보세요.",
-      9: "오늘 수업 내용과 이전 주차 내용을 연결해서 볼 때 어떤 흐름이 보이나요?",
-      10: "디지털 시민성, 윤리, 책임과 관련하여 오늘 수업에서 중요하다고 느낀 점을 적어보세요.",
-      11: "오늘 배운 내용을 바탕으로 예비교사로서 자신이 더 준비해야 할 점은 무엇인가요?",
-      12: "수업 속 디지털 활용이 놀이, 표현, 소통과 어떻게 연결될 수 있는지 자신의 생각을 적어보세요.",
-      13: "이번 학기 디지털 교육 수업을 돌아보며 가장 의미 있었던 배움과 남은 질문을 적어보세요."
-    };
-
     const colors = ["yellow", "pink", "blue", "green", "lilac"];
 
     const weekEl = document.getElementById("week");
@@ -315,19 +392,15 @@
     const nicknameEl = document.getElementById("nickname");
     const contentEl = document.getElementById("content");
     const questionTextEl = document.getElementById("questionText");
+    const questionEditorEl = document.getElementById("questionEditor");
+    const linkUrlEl = document.getElementById("linkUrl");
     const statusMsgEl = document.getElementById("statusMsg");
     const notesWrapEl = document.getElementById("notesWrap");
     const boardSubEl = document.getElementById("boardSub");
-
-    function updateQuestion() {
-      const week = weekEl.value;
-      questionTextEl.textContent = QUESTIONS[week] || "이번 주 질문을 준비 중입니다.";
-      boardSubEl.textContent = `${week}주차 생각들을 보여줍니다.`;
-      loadNotes();
-    }
+    const boardCountEl = document.getElementById("boardCount");
 
     function escapeHtml(text) {
-      return text
+      return String(text || "")
         .replace(/&/g, "&amp;")
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;");
@@ -336,7 +409,145 @@
     function formatDate(dateStr) {
       const d = new Date(dateStr);
       if (isNaN(d)) return "";
-      return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`;
+      return `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function isValidUrl(url) {
+      if (!url) return true;
+      try {
+        const parsed = new URL(url);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+      } catch {
+        return false;
+      }
+    }
+
+    function getYoutubeEmbedUrl(url) {
+      if (!url) return "";
+
+      try {
+        const parsed = new URL(url);
+        const host = parsed.hostname.replace("www.", "");
+
+        if (host === "youtu.be") {
+          const videoId = parsed.pathname.split("/").filter(Boolean)[0];
+          return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+        }
+
+        if (host === "youtube.com" || host === "m.youtube.com") {
+          if (parsed.pathname === "/watch") {
+            const videoId = parsed.searchParams.get("v");
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+          }
+
+          if (parsed.pathname.startsWith("/shorts/")) {
+            const videoId = parsed.pathname.split("/")[2];
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+          }
+
+          if (parsed.pathname.startsWith("/embed/")) {
+            const videoId = parsed.pathname.split("/")[2];
+            return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+          }
+        }
+
+        return "";
+      } catch {
+        return "";
+      }
+    }
+
+    function updateBoardCount(data) {
+      const classMap = {
+        "A반": new Set(),
+        "B반": new Set(),
+        "C반": new Set(),
+        "D반": new Set()
+      };
+
+      (data || []).forEach(item => {
+        const className = item.class;
+        const nickname = (item.nickname || "").trim();
+
+        if (classMap[className] && nickname) {
+          classMap[className].add(nickname);
+        }
+      });
+
+      const aCount = classMap["A반"].size;
+      const bCount = classMap["B반"].size;
+      const cCount = classMap["C반"].size;
+      const dCount = classMap["D반"].size;
+      const totalCount = aCount + bCount + cCount + dCount;
+
+      boardCountEl.textContent = `현재 기록 인원: 전체 ${totalCount}명 · A반 ${aCount}명 · B반 ${bCount}명 · C반 ${cCount}명 · D반 ${dCount}명`;
+    }
+
+    async function loadQuestion() {
+      const week = Number(weekEl.value);
+
+      const { data, error } = await supabaseClient
+        .from("weekly_questions")
+        .select("*")
+        .eq("week", week)
+        .maybeSingle();
+
+      if (error) {
+        console.error(error);
+        questionTextEl.textContent = "질문을 불러오지 못했습니다.";
+        questionEditorEl.value = "";
+        return;
+      }
+
+      if (!data || !data.question_text) {
+        questionTextEl.textContent = "이번 주 질문이 아직 등록되지 않았습니다.";
+        questionEditorEl.value = "";
+        return;
+      }
+
+      questionTextEl.textContent = data.question_text;
+      questionEditorEl.value = data.question_text;
+    }
+
+    async function saveQuestion() {
+      const week = Number(weekEl.value);
+      const questionText = questionEditorEl.value.trim();
+
+      if (!week) {
+        statusMsgEl.style.color = "#c62828";
+        statusMsgEl.textContent = "주차를 먼저 선택해주세요.";
+        return;
+      }
+
+      if (!questionText) {
+        statusMsgEl.style.color = "#c62828";
+        statusMsgEl.textContent = "질문 내용을 입력해주세요.";
+        return;
+      }
+
+      statusMsgEl.style.color = "#475467";
+      statusMsgEl.textContent = "질문 저장 중입니다...";
+
+      const { error } = await supabaseClient
+        .from("weekly_questions")
+        .upsert(
+          [{
+            week: week,
+            question_text: questionText
+          }],
+          { onConflict: "week" }
+        );
+
+      if (error) {
+        console.error(error);
+        statusMsgEl.style.color = "#c62828";
+        statusMsgEl.textContent = "질문 저장에 실패했습니다.";
+        return;
+      }
+
+      questionTextEl.textContent = questionText;
+      statusMsgEl.style.color = "#2e7d32";
+      statusMsgEl.textContent = "질문이 저장되었습니다.";
     }
 
     async function saveNote() {
@@ -344,10 +555,17 @@
       const className = classEl.value;
       const nickname = nicknameEl.value.trim();
       const content = contentEl.value.trim();
+      const linkUrl = linkUrlEl.value.trim();
 
       if (!week || !className || !nickname || !content) {
         statusMsgEl.style.color = "#c62828";
         statusMsgEl.textContent = "주차, 반, 별명, 내용을 모두 입력해주세요.";
+        return;
+      }
+
+      if (!isValidUrl(linkUrl)) {
+        statusMsgEl.style.color = "#c62828";
+        statusMsgEl.textContent = "링크 주소 형식이 올바르지 않습니다.";
         return;
       }
 
@@ -361,7 +579,8 @@
             nickname: nickname,
             class: className,
             week: week,
-            content: content
+            content: content,
+            link_url: linkUrl || null
           }
         ]);
 
@@ -373,9 +592,46 @@
       }
 
       contentEl.value = "";
+      linkUrlEl.value = "";
+
       statusMsgEl.style.color = "#2e7d32";
       statusMsgEl.textContent = "생각이 저장되었습니다.";
       loadNotes();
+    }
+
+    function renderMedia(item) {
+      let mediaHtml = "";
+
+      if (item.link_url) {
+        const youtubeEmbedUrl = getYoutubeEmbedUrl(item.link_url);
+
+        if (youtubeEmbedUrl) {
+          mediaHtml += `
+            <div class="note-video-embed">
+              <iframe
+                src="${escapeHtml(youtubeEmbedUrl)}"
+                title="유튜브 영상"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen>
+              </iframe>
+            </div>
+            <a class="note-link" href="${escapeHtml(item.link_url)}" target="_blank" rel="noopener noreferrer">
+              🔗 유튜브 원본 링크 열기
+            </a>
+          `;
+        } else {
+          mediaHtml += `
+            <a class="note-link" href="${escapeHtml(item.link_url)}" target="_blank" rel="noopener noreferrer">
+              🔗 참고 링크 열기
+            </a>
+          `;
+        }
+      }
+
+      if (!mediaHtml) return "";
+
+      return `<div class="media-wrap">${mediaHtml}</div>`;
     }
 
     async function loadNotes() {
@@ -389,9 +645,12 @@
 
       if (error) {
         console.error(error);
+        boardCountEl.textContent = "기록 인원을 불러오지 못했습니다.";
         notesWrapEl.innerHTML = `<div class="empty">게시글을 불러오지 못했습니다.</div>`;
         return;
       }
+
+      updateBoardCount(data);
 
       if (!data || data.length === 0) {
         notesWrapEl.innerHTML = `<div class="empty">${week}주차에 아직 올라온 생각이 없습니다.</div>`;
@@ -405,6 +664,7 @@
             <div>
               <div class="meta">${item.week}주차 · ${escapeHtml(item.class)} · ${escapeHtml(item.nickname)}</div>
               <div class="content">${escapeHtml(item.content).replace(/\n/g, "<br>")}</div>
+              ${renderMedia(item)}
             </div>
             <div class="time">${formatDate(item.created_at)}</div>
           </div>
@@ -412,6 +672,13 @@
       }).join("");
 
       notesWrapEl.innerHTML = `<div class="notes-grid">${html}</div>`;
+    }
+
+    async function updateQuestion() {
+      const week = weekEl.value;
+      boardSubEl.textContent = `${week}주차 생각들을 보여줍니다.`;
+      await loadQuestion();
+      await loadNotes();
     }
 
     weekEl.addEventListener("change", updateQuestion);
